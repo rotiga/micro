@@ -14,6 +14,7 @@ use \Micro\Micro;
  * @package micro
  * @version 1.0
  * @since 1.0
+ * @final
  */
 final class Registry
 {
@@ -23,6 +24,8 @@ final class Registry
      * @access protected
      * @result void
      */
+	 	// Основные переменные и объекты классов
+    static protected $data = array();
     protected function __construct()
     {
     }
@@ -41,27 +44,30 @@ final class Registry
      * Get registry value
      *
      * @access public
-     * @param string $name
+     * @param string $name element name
      * @return mixed
+     * @static
      */
     public static function get($name = '')
     {
         self::configure($name);
-        return (isset($GLOBALS[$name])) ? $GLOBALS[$name] : null;
+        return (isset(self::data[$name])) ? self::data[$name] : null;
     }
 
     /**
      * Set registry value
      *
      * @access public
-     * @param string $name
-     * @param mixed $value
+     * @param string $name element name
+     * @param mixed $value element value
      * @return void
+     * @static
      */
-    public static function set($name, $value)
-    {
-        self::configure($name);
-        $GLOBALS[$name] = $value;
+  // Добавление данных
+    static public function set($name, $value) {
+		self::configure();
+        self::$data[$name] = $value;
+       
     }
 
     /**
@@ -69,24 +75,26 @@ final class Registry
      *
      * @access public
      * @return array
+     * @static
      */
     public static function getAll()
     {
         self::configure();
-        return $GLOBALS;
+        return self::data;
     }
 
     /**
      * Get component's
      *
      * @access public
-     * @param null $name
+     * @param null $name name element to initialize
      * @throws \Micro\base\Exception
+     * @static
      */
     public static function configure($name = null)
     {
-        if ($name AND isset($GLOBALS[$name])) {
-            return; // Already defined
+        if ($name AND isset(self::data[$name])) {
+            return;
         }
 
         if (isset(Micro::getInstance()->config['components'])) {
@@ -116,9 +124,10 @@ final class Registry
      * Load component
      *
      * @access public
-     * @param $name
-     * @param $options
+     * @param string $name component name
+     * @param array $options component configs
      * @return bool
+     * @static
      */
     public static function loadComponent($name, $options)
     {
@@ -143,7 +152,7 @@ final class Registry
         $className = $options['class'];
         unset($options['class']);
 
-        $GLOBALS[$name] = new $className($options);
+        self::data[$name] = new $className($options);
         return true;
     }
 }
